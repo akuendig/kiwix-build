@@ -2,6 +2,7 @@ from .base import (
     Dependency,
     GitClone,
     QMakeBuilder)
+from kiwixbuild._global import neutralEnv
 
 class KiwixDesktop(Dependency):
     name = "kiwix-desktop"
@@ -11,7 +12,14 @@ class KiwixDesktop(Dependency):
         git_dir = "kiwix-desktop"
 
     class Builder(QMakeBuilder):
-        dependencies = ["qt", "qtwebengine", "kiwix-lib"]
+        dependencies = ['qt', 'qtwebengine', 'kiwix-lib']
+
+        @classmethod
+        def get_dependencies(self, platformInfo, allDeps):
+            if neutralEnv('distname') == 'Windows':
+                return ['kiwix-lib']
+            return cls.dependencies
+        
         @property
         def configure_options(self):
             yield "PREFIX={}".format(self.buildEnv.install_dir)
